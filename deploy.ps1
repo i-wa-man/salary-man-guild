@@ -30,7 +30,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-Set-Location "$ScriptDir\.."
+Set-Location $ScriptDir
 
 # ============================================================
 # Constants
@@ -41,9 +41,9 @@ $WorkerModel = if ($Battle) { "opus" } else { "sonnet" }
 $FormationLabel = if ($Battle) { "BATTLE (All Opus)" } else { "Default (Router:Opus / Workers:Sonnet)" }
 
 # ============================================================
-# Discover available teams from swarm/teams/*.yaml
+# Discover available teams from teams/*.yaml
 # ============================================================
-$TeamsDir = "swarm/teams"
+$TeamsDir = "teams"
 $AvailableTeams = @()
 if (Test-Path $TeamsDir) {
     $AvailableTeams = Get-ChildItem "$TeamsDir/*.yaml" | ForEach-Object { $_.BaseName }
@@ -123,12 +123,12 @@ Write-Host ""
 # Ensure runtime directories exist
 # ============================================================
 $RuntimeDirs = @(
-    "swarm/boards",
-    "swarm/results",
-    "swarm/projects",
-    "swarm/handoffs",
-    "swarm/status",
-    "swarm/skill-proposals"
+    "boards",
+    "results",
+    "projects",
+    "handoffs",
+    "status",
+    "skill-proposals"
 )
 foreach ($dir in $RuntimeDirs) {
     if (-not (Test-Path $dir)) {
@@ -147,13 +147,13 @@ foreach ($teamName in $Teams) {
     psmux kill-session -t $session 2>$null
 
     # Board: reset (-Clean) or ensure exists
-    $boardPath = "swarm/boards/$teamName.yaml"
+    $boardPath = "boards/$teamName.yaml"
     if ($Clean) {
         if (Test-Path $boardPath) {
             $bcontent = Get-Content $boardPath -Raw
             if ($bcontent.Contains("task_")) {
                 $ts = Get-Date -Format "yyyyMMdd_HHmmss"
-                $backupDir = "swarm/logs/backup_$ts"
+                $backupDir = "logs/backup_$ts"
                 New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
                 Copy-Item $boardPath "$backupDir/"
             }
@@ -166,7 +166,7 @@ foreach ($teamName in $Teams) {
     }
 
     # Status file: ensure exists
-    $statusPath = "swarm/status/$teamName.yaml"
+    $statusPath = "status/$teamName.yaml"
     if (-not (Test-Path $statusPath)) {
         $sc = @("team: $teamName", "updated_at: """"", "active: []", "completed_today: []", "blocked: []", "skill_proposals: []")
         $sc -join "`n" | Set-Content $statusPath -Encoding UTF8
@@ -231,7 +231,7 @@ foreach ($teamName in $Teams) {
 
         if ($ready) {
             # Load instructions: Router (pane 0)
-            psmux send-keys -t "$($session):team.0" "Read swarm/router.md, swarm/teams/$teamName.yaml, swarm/config.yaml. You are the Router of the $teamName team."
+            psmux send-keys -t "$($session):team.0" "Read router.md, teams/$teamName.yaml, config.yaml. You are the Router of the $teamName team."
             Start-Sleep -Milliseconds 500
             psmux send-keys -t "$($session):team.0" Enter
 
@@ -240,7 +240,7 @@ foreach ($teamName in $Teams) {
             # Load instructions: Workers (panes 1-5)
             for ($i = 0; $i -lt $WorkersPerTeam; $i++) {
                 $p = $i + 1
-                psmux send-keys -t "$($session):team.$p" "Read swarm/worker.md and swarm/teams/$teamName.yaml. You are worker_$i in the $teamName team."
+                psmux send-keys -t "$($session):team.$p" "Read worker.md and teams/$teamName.yaml. You are worker_$i in the $teamName team."
                 Start-Sleep -Milliseconds 300
                 psmux send-keys -t "$($session):team.$p" Enter
                 Start-Sleep -Seconds 1
@@ -259,13 +259,13 @@ foreach ($teamName in $Teams) {
 # ============================================================
 Write-Host "  Starting dashboard watcher..." -ForegroundColor Yellow
 $watcherArgs = @(
-    "swarm/status",
-    "swarm/status.md",
+    "status",
+    "status.md",
     "true",
     "",
     "gog"
 )
-foreach ($cfgLine in (Get-Content "swarm/config.yaml" -ErrorAction SilentlyContinue)) {
+foreach ($cfgLine in (Get-Content "config.yaml" -ErrorAction SilentlyContinue)) {
     if ($cfgLine.Contains("spreadsheet_id:")) {
         $sid = $cfgLine.Split(":", 2)[1].Trim().Trim('"')
         if ($sid.Length -gt 0) { $watcherArgs[3] = $sid }
@@ -291,11 +291,11 @@ foreach ($t in $Teams) {
 }
 Write-Host ""
 Write-Host "  Files:" -ForegroundColor White
-Write-Host "    Boards    : swarm/boards/{team}.yaml" -ForegroundColor Gray
-Write-Host "    Results   : swarm/results/" -ForegroundColor Gray
-Write-Host "    Status    : swarm/status.md" -ForegroundColor Gray
-Write-Host "    Projects  : swarm/projects/" -ForegroundColor Gray
-Write-Host "    Proposals : swarm/skill-proposals/" -ForegroundColor Gray
+Write-Host "    Boards    : boards/{team}.yaml" -ForegroundColor Gray
+Write-Host "    Results   : results/" -ForegroundColor Gray
+Write-Host "    Status    : status.md" -ForegroundColor Gray
+Write-Host "    Projects  : projects/" -ForegroundColor Gray
+Write-Host "    Proposals : skill-proposals/" -ForegroundColor Gray
 Write-Host ""
 
 # ============================================================

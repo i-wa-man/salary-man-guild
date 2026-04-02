@@ -27,10 +27,10 @@ You do NOT execute tasks yourself. You delegate to teams.
 ## Startup
 
 ```
-1. Read this file (swarm/commander.md)
-2. Read swarm/config.yaml
+1. Read this file (commander.md)
+2. Read config.yaml
 3. List available teams:
-   Get-ChildItem swarm/teams/*.yaml | ForEach-Object { $_.BaseName }
+   Get-ChildItem teams/*.yaml | ForEach-Object { $_.BaseName }
 4. Read each team YAML to understand what each team does
 5. Report ready to user
 ```
@@ -39,7 +39,7 @@ You do NOT execute tasks yourself. You delegate to teams.
 
 ## Available Teams
 
-Read `swarm/teams/*.yaml` at startup. Each team has:
+Read `teams/*.yaml` at startup. Each team has:
 - `domain.what`: what the team handles
 - `domain.not`: what to send elsewhere
 
@@ -93,10 +93,10 @@ When the user asks for progress:
 
 ```powershell
 # Read the auto-generated dashboard
-Get-Content swarm/status.md
+Get-Content status.md
 
 # Or check a specific team's status
-Get-Content swarm/status/dev.yaml
+Get-Content status/dev.yaml
 ```
 
 You can also peek at a Router's screen:
@@ -114,7 +114,7 @@ For tasks that span multiple teams:
 1. Break the request into team-specific instructions
 2. Send each Router its part
 3. If teams need each other's output, include that in the instruction:
-   "After design team finishes wireframes, implement based on their output in swarm/results/"
+   "After design team finishes wireframes, implement based on their output in results/"
 
 For L2+ autonomy, Routers handle handoffs automatically.
 For L1, tell the user when they need to bridge results between teams.

@@ -30,15 +30,15 @@ forbidden_actions:
 ## 起動手順
 
 ```
-1. この指示書を読む（swarm/worker.md）
+1. この指示書を読む（worker.md）
 2. 自分のIDを確認:
    psmux display-message -t "$TMUX_PANE" -p '#{@agent_id}'
    → 例: worker_0, worker_1, ...
 3. 自分のチームを確認:
    psmux display-message -t "$TMUX_PANE" -p '#{@team_name}'
    → 例: dev, design, article, ...
-4. swarm/teams/{team}.yaml を読む（チーム定義: 何をやる/やらないチームか）
-5. swarm/boards/{team}.yaml を読む（pendingタスクがあれば取る）
+4. teams/{team}.yaml を読む（チーム定義: 何をやる/やらないチームか）
+5. boards/{team}.yaml を読む（pendingタスクがあれば取る）
 6. 準備完了
 ```
 
@@ -49,7 +49,7 @@ forbidden_actions:
 ### Step 1: ボードを読む
 
 ```
-swarm/boards/{team}.yaml
+boards/{team}.yaml
 ```
 
 以下の条件でタスクを探す:
@@ -79,14 +79,14 @@ assigned_to: worker_2    # 自分のID
 
 | フィールド | 読むもの |
 |-----------|---------|
-| `project` | swarm/projects/{project}.yaml |
+| `project` | projects/{project}.yaml |
 | `context.files` | 列挙されたファイル |
 | `context.previous_results` | 前フェーズの結果ファイル |
 | `context.knowledge` | タスク説明に含まれるドメイン知識 |
 
 ### Step 4: 実行する
 
-チーム定義（swarm/teams/{team}.yaml）の `domain.what` が自分の専門領域。
+チーム定義（teams/{team}.yaml）の `domain.what` が自分の専門領域。
 その専門家として最高品質で実行する。
 
 **スキルの活用**: `~/.claude/skills/` にあるスキルは自由に使ってよい。
@@ -102,7 +102,7 @@ assigned_to: worker_2    # 自分のID
 
 ### Step 6: 結果を書く
 
-`swarm/results/{task_id}_result.yaml` を作成:
+`results/{task_id}_result.yaml` を作成:
 
 ```yaml
 task_id: task_001
@@ -169,7 +169,7 @@ psmux capture-pane -t {session}:team.0 -p | tail -5
 
 ```powershell
 # 1回目: メッセージ
-psmux send-keys -t {session}:team.0 'task_001 完了。結果: swarm/results/task_001_result.yaml'
+psmux send-keys -t {session}:team.0 'task_001 完了。結果: results/task_001_result.yaml'
 # 2回目: Enter
 psmux send-keys -t {session}:team.0 Enter
 ```
@@ -248,13 +248,13 @@ result:
 ## /clear 後の復帰
 
 ```
-1. swarm/worker.md を読む（この指示書）
+1. worker.md を読む（この指示書）
 2. 自分のIDを確認:
    psmux display-message -t "$TMUX_PANE" -p '#{@agent_id}'
 3. 自分のチームを確認:
    psmux display-message -t "$TMUX_PANE" -p '#{@team_name}'
-4. swarm/teams/{team}.yaml を読む
-5. swarm/boards/{team}.yaml を読む
+4. teams/{team}.yaml を読む
+5. boards/{team}.yaml を読む
 6. pending タスクがあれば Step 1 から再開
 7. なければ停止して待機
 ```
