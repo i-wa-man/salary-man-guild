@@ -1,0 +1,72 @@
+# Project Template
+# ================
+# Copy this file to swarm/projects/{project_id}.yaml and fill in.
+
+project:
+  id: "{project_id}"
+  name: "{プロジェクト名}"
+  status: active              # active / paused / done
+  autonomy: L1                # L1 / L2 / L3（このプロジェクトの自律レベル）
+
+  # 参照先パス
+  paths:
+    drive: ""                 # Google Drive パス（例: "G:/My Drive/Projects/xxx"）
+    local: ""                 # ローカル作業パス（例: "C:/work/xxx"）
+
+  # 関わるチーム
+  teams: []                   # 例: [strategy, article, sns]
+
+  # ──────────────────────────────────────────────
+  # ドメイン知識（プロジェクトを進めるほど蓄積する）
+  # ──────────────────────────────────────────────
+  knowledge:
+    # ターゲット
+    target_audience: ""       # 例: "30代男性、IT企業勤務"
+
+    # トーン・スタイル
+    tone: ""                  # 例: "プロフェッショナルだが堅すぎない"
+
+    # 競合
+    competitors: []           # 例: ["CompanyA", "CompanyB"]
+
+    # 技術スタック（該当する場合）
+    tech_stack: []            # 例: ["Next.js", "Prisma", "PostgreSQL"]
+
+    # 意思決定ログ（時系列で追記）
+    decisions:
+      []
+      # - date: "2026-03-29"
+      #   what: "価格帯は月額3,000-5,000円"
+      #   why: "競合の平均が4,000円。参入時は下限で"
+
+    # その他（自由記述。調査で判明したこと等）
+    notes: ""
+
+  # ──────────────────────────────────────────────
+  # フェーズ（DAG: 依存関係で順序制御）
+  # ──────────────────────────────────────────────
+  phases:
+    []
+    # - id: research
+    #   name: "調査"
+    #   status: pending       # pending / in_progress / done
+    #   depends_on: []
+    #   gate: "Routerが調査結果をレビュー"
+    #
+    # - id: strategy
+    #   name: "戦略策定"
+    #   status: pending
+    #   depends_on: [research]
+    #   gate: "ユーザーに戦略案を確認（L1）"
+    #
+    # - id: content
+    #   name: "コンテンツ制作"
+    #   status: pending
+    #   depends_on: [strategy]
+    #   gate: "Routerが品質チェック"
+    #
+    # - id: launch
+    #   name: "ローンチ"
+    #   status: pending
+    #   depends_on: [content]
+    #   gate: "ユーザー最終確認"

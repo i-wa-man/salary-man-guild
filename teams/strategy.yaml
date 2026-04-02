@@ -1,0 +1,18 @@
+# Strategy Team
+name: strategy
+session: strategy
+description: "事業戦略、市場分析、意思決定支援、ロードマップ"
+
+domain:
+  what:
+    - 市場調査・競合分析
+    - ビジネスモデル設計
+    - 価格戦略・ポジショニング
+    - Go-to-Market計画
+    - KPI設計・分析
+    - ロードマップ策定
+    - リスク分析
+    - 投資判断・優先順位付け
+  not:
+    - 実装作業（→ dev, design, article等）
+    - 日常運用（→ ops）

@@ -1,0 +1,17 @@
+# SNS Team
+name: sns
+session: sns
+description: "SNS投稿作成、運用分析、エンゲージメント施策"
+
+domain:
+  what:
+    - SNS投稿の企画・作成（X, Instagram, LinkedIn等）
+    - 投稿カレンダー作成
+    - エンゲージメント分析
+    - ハッシュタグ戦略
+    - コメント対応方針
+    - キャンペーン企画
+  not:
+    - 長文記事（→ article）
+    - ビジネス戦略全体（→ strategy）
+    - 広告運用の技術設定（→ ops）

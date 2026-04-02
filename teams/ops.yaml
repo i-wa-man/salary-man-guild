@@ -1,0 +1,17 @@
+# Operations Team
+name: ops
+session: ops
+description: "保守運用、監視、障害対応、インフラ管理、自動化"
+
+domain:
+  what:
+    - サーバ・インフラ運用
+    - 監視・アラート設定
+    - 障害対応・復旧
+    - デプロイ作業
+    - 運用自動化スクリプト
+    - ログ分析
+    - セキュリティパッチ適用
+  not:
+    - 新機能の実装（→ dev）
+    - ビジネス判断（→ strategy）

@@ -1,0 +1,17 @@
+# Design Team
+name: design
+session: design
+description: "UI/UX設計、グラフィック、ワイヤーフレーム、デザインシステム"
+
+domain:
+  what:
+    - UI/UXデザイン
+    - ワイヤーフレーム・モックアップ
+    - デザインシステム構築
+    - グラフィック素材の指示書作成
+    - ユーザーフロー設計
+    - プロトタイプ定義
+  not:
+    - コーディング（→ dev）
+    - マーケティング戦略（→ strategy）
+    - 実際の画像生成（指示書まで）

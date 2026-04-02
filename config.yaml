@@ -1,0 +1,185 @@
+# ============================================================
+# AI Swarm - Global Configuration
+# ============================================================
+
+# Session structure: 1 team = 1 psmux session
+# Each session: 1 Router + 5 Workers = 6 agents
+session_prefix: ""  # Sessions are named by team name directly
+
+# ------------------------------------------------------------
+# Model settings
+# ------------------------------------------------------------
+models:
+  default:
+    router: opus
+    router_thinking: false    # Dispatch is fast, no deep reasoning needed
+    worker: sonnet
+    worker_thinking: true
+
+  battle:                     # ./deploy.ps1 dev -Battle
+    router: opus
+    router_thinking: true
+    worker: opus
+    worker_thinking: true
+
+workers_per_team: 5
+
+# ------------------------------------------------------------
+# Google Workspace integration
+# ------------------------------------------------------------
+google:
+  tool: gog                   # gog or gws
+  # gog: brew install gogcli → gog auth add you@gmail.com
+  # gws: npm install -g @googleworkspace/cli → gws auth setup
+
+  dashboard:
+    enabled: true
+    spreadsheet_id: "1PoVM0VY0csYio6DuxU0NnL1syDUGEIozVFOXdg_V0q0"        # ← ここにSpreadsheet IDを貼る（URLの /d/ と /edit の間）
+    sheets:
+      projects: "Projects"    # プロジェクト一覧タブ
+      active: "Active"        # アクティブタスクタブ
+      completed: "Completed"  # 完了タスクタブ
+      proposals: "Skills"     # スキル化提案タブ
+
+  drive:
+    enabled: true
+    # プロジェクトごとに paths.drive で指定
+
+# ------------------------------------------------------------
+# Autonomy levels
+# ------------------------------------------------------------
+autonomy:
+  default_level: L1
+
+  levels:
+    L1: "全gateでユーザー確認"
+    L2: "戦略判断のみ確認"
+    L3: "異常時のみ報告"
+
+  # 判断種別ごとの初期レベル
+  decision_types:
+    quality_gate:     L1      # フェーズ間の品質チェック
+    phase_transition: L1      # 次フェーズへの移行判断
+    strategy_choice:  L1      # 戦略的判断
+    task_decompose:   L2      # タスク分解方法（最初からRouter判断）
+    worker_assign:    L2      # Worker割当（最初からRouter判断）
+    external_publish: L1      # 外部公開（昇格不可）
+
+  # 昇格ルール
+  promotion:
+    L1_to_L2:
+      condition: "同じ種類の判断を3回連続でユーザーが承認"
+      action: "Routerがstatus.mdに昇格提案を記載。ユーザー承認で昇格。"
+    L2_to_L3:
+      condition: "L2で10タスク以上を問題なく自律完了"
+      action: "同上"
+    demotion:
+      condition: "ユーザーが成果物を差し戻し"
+      action: "即座に1段階降格。理由をMemory MCPに記録。"
+
+  # どのレベルでも必ずユーザーに聞く
+  always_ask:
+    - "予算を伴う判断"
+    - "外部への公開・送信"
+    - "既存の方針の変更"
+
+# ------------------------------------------------------------
+# Memory MCP
+# ------------------------------------------------------------
+memory:
+  enabled: true
+  storage: memory/swarm_memory.jsonl
+
+  # Routerが記録するタイミング
+  save_triggers:
+    - "ユーザーが好みを表明（トーン、方針等）"
+    - "プロジェクト横断で再利用できる知見"
+    - "自律レベル昇格/降格の履歴"
+    - "スキル化提案の承認/却下理由"
+
+  # 記録しないもの（YAMLやファイルにあるものは重複させない）
+  do_not_save:
+    - "タスクの詳細（YAMLにある）"
+    - "ファイルの中身（読めばわかる）"
+    - "進行中タスクの状況（ボードにある）"
+
+# ------------------------------------------------------------
+# Skill proposals
+# ------------------------------------------------------------
+skill_proposals:
+  dir: "swarm/skill-proposals"
+  criteria:
+    - "他チームでも使えるパターン"
+    - "2回以上同じ手順を実行"
+    - "手順や知識が必要な作業"
+    - "自動化すれば品質が安定する作業"
+
+# ------------------------------------------------------------
+# Quality gate
+# ------------------------------------------------------------
+quality:
+  # high priority タスクはRouterがレビュースキル（/review）で検証
+  # スキルは context: fork で独立サブエージェント実行
+  review_skill: "/review"
+  require_review_for: [high]  # high priority のみ。medium/low はセルフレビュー
+
+# ------------------------------------------------------------
+# Context management
+# ------------------------------------------------------------
+context:
+  # Workerはステータスラインでコンテキスト使用量を監視
+  # 50%超で途中成果を保存しRouterに報告
+  worker_threshold_percent: 50
+  # Router は報告を受けたら /clear を送信 → 残りタスクを再投入
+  action_on_threshold: "save_progress → report → /clear → resume"
+
+# ------------------------------------------------------------
+# Communication
+# ------------------------------------------------------------
+communication:
+  send_keys:
+    method: two_calls         # 必ず2回のBash/PowerShell呼び出しに分ける
+    interval_between_workers: 2  # 複数Workerへの連続送信は2秒間隔
+
+  # チーム間連携
+  handoffs:
+    dir: "swarm/handoffs"
+    # L1: ユーザーが口頭で橋渡し
+    # L2+: Routerがhandoffファイルを書いて相手チームに通知
+
+# ------------------------------------------------------------
+# Cost control
+# ------------------------------------------------------------
+cost:
+  polling: forbidden
+  clear_after_task: true      # Worker はタスク完了後に /clear
+  max_concurrent_opus: 4      # battle mode以外でのOpus同時数上限
+
+# ------------------------------------------------------------
+# Dashboard auto-sync
+# ------------------------------------------------------------
+dashboard:
+  # deploy.ps1 起動時にバックグラウンドで監視スクリプトを開始
+  # status/*.yaml の変更を検知 → status.md 再生成 + Sheets同期
+  auto_sync: true
+  watch_interval_seconds: 10  # ファイル変更チェック間隔
+
+# ------------------------------------------------------------
+# Timeouts
+# ------------------------------------------------------------
+timeouts:
+  task_stale_minutes: 10      # 未完了タスクの再割当判定
+  worker_idle_minutes: 30     # アイドルWorkerへの /clear 推奨
+
+# ------------------------------------------------------------
+# File paths
+# ------------------------------------------------------------
+paths:
+  teams: "swarm/teams"
+  boards: "swarm/boards"
+  results: "swarm/results"
+  projects: "swarm/projects"
+  handoffs: "swarm/handoffs"
+  status_dir: "swarm/status"
+  status_md: "swarm/status.md"
+  skill_proposals: "swarm/skill-proposals"

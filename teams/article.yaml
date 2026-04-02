@@ -1,0 +1,17 @@
+# Article Team
+name: article
+session: article
+description: "ブログ記事、SEO記事、ホワイトペーパー、技術記事"
+
+domain:
+  what:
+    - ブログ記事の企画・執筆
+    - SEO記事（キーワード調査含む）
+    - ホワイトペーパー・事例集
+    - 技術記事・チュートリアル
+    - 記事のリライト・改善
+    - 構成案・アウトライン作成
+  not:
+    - SNS投稿（→ sns）
+    - LP・広告コピー（→ 必要に応じてチーム追加）
+    - 事業戦略（→ strategy）

@@ -1,0 +1,18 @@
+# Development Team
+name: dev
+session: dev
+description: "ソフトウェア開発、API、DB、インフラ構築"
+
+domain:
+  what:
+    - 機能実装・バグ修正
+    - API設計・実装
+    - DB設計・マイグレーション
+    - CI/CD構築
+    - コードレビュー
+    - リファクタリング
+    - パフォーマンス改善
+  not:
+    - UI/UXデザイン（→ design）
+    - 本番運用・監視（→ ops）
+    - ビジネス戦略（→ strategy）
