@@ -1,0 +1,10 @@
+﻿boards/
+results/
+handoffs/
+status/
+skill-proposals/
+logs/
+status.md
+projects/*.yaml
+!projects/_template.yaml
+memory/
