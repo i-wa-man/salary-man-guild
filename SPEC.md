@@ -128,7 +128,7 @@ psmux display-message -t "$TMUX_PANE" -p '#{@team_name}'
 - **Claude Code CLI**: `claude` command available in PATH.
 - **gog** (optional): Google Sheets/Drive CLI tool for dashboard sync.
 
-### 3.2 Deploy Script (`swarm/deploy.ps1`)
+### 3.2 Deploy Script (`deploy.ps1`)
 
 PowerShell script that creates psmux sessions, launches Claude Code, and loads instructions.
 
@@ -159,7 +159,7 @@ PowerShell script that creates psmux sessions, launches Claude Code, and loads i
 
 1. **Kill existing session** if present
 2. **Board management**: `-Clean` backs up and resets; otherwise ensures board file exists
-3. **Status file**: Create `swarm/status/{team}.yaml` if missing
+3. **Status file**: Create `status/{team}.yaml` if missing
 4. **Create psmux session**:
    - Window `router`: 1 pane, set `@agent_id=router`, `@team_name={team}`
    - Window `workers`: 5 panes (split-window horizontal/vertical alternating, tiled layout), set `@agent_id=worker_0..4`, `@team_name={team}`
@@ -169,25 +169,25 @@ PowerShell script that creates psmux sessions, launches Claude Code, and loads i
    - Workers: `claude --model {sonnet|opus} --dangerously-skip-permissions` (500ms stagger)
 6. **Wait for ready**: Poll Router pane (max 30s) for "bypass permissions" prompt
 7. **Send initial instructions**:
-   - Router: `"Read swarm/router.md, swarm/teams/{team}.yaml, swarm/config.yaml. You are the Router of the {team} team."`
-   - Workers (2s stagger): `"Read swarm/worker.md and swarm/teams/{team}.yaml. You are worker_{N} in the {team} team."`
+   - Router: `"Read router.md, teams/{team}.yaml, config.yaml. You are the Router of the {team} team."`
+   - Workers (2s stagger): `"Read worker.md and teams/{team}.yaml. You are worker_{N} in the {team} team."`
 
 ### 3.4 Runtime Directories (auto-created)
 
 ```
-swarm/boards/          # Task boards per team
-swarm/results/         # Task result files
-swarm/projects/        # Project definitions
-swarm/handoffs/        # Inter-team handoff files
-swarm/status/          # Team status YAML files
-swarm/skill-proposals/ # Skill proposal files
+boards/          # Task boards per team
+results/         # Task result files
+projects/        # Project definitions
+handoffs/        # Inter-team handoff files
+status/          # Team status YAML files
+skill-proposals/ # Skill proposal files
 ```
 
 ### 3.5 Dashboard Watcher (Background)
 
 `deploy.ps1` starts a background PowerShell job that:
-- Polls `swarm/status/*.yaml` every **10 seconds** for file changes (by LastWriteTime)
-- Regenerates `swarm/status.md` (markdown dashboard)
+- Polls `status/*.yaml` every **10 seconds** for file changes (by LastWriteTime)
+- Regenerates `status.md` (markdown dashboard)
 - Syncs to Google Sheets via `gog` (if `spreadsheet_id` is configured)
 - Non-fatal: Sheets sync failure does not affect local dashboard
 
@@ -205,7 +205,7 @@ psmux attach -t article      # Connect to article team
 
 ## 4. Configuration Reference
 
-All configuration lives in `swarm/config.yaml`. Below is every section explained.
+All configuration lives in `config.yaml`. Below is every section explained.
 
 ### 4.1 Models
 
@@ -293,7 +293,7 @@ memory:
 
 ```yaml
 skill_proposals:
-  dir: "swarm/skill-proposals"
+  dir: "skill-proposals"
   criteria:
     - "Pattern usable by other teams"
     - "Same procedure executed 2+ times"
@@ -325,7 +325,7 @@ communication:
     method: two_calls              # Message and Enter in separate calls
     interval_between_workers: 2    # 2s between consecutive worker notifications
   handoffs:
-    dir: "swarm/handoffs"          # Inter-team handoff files
+    dir: "handoffs"          # Inter-team handoff files
 ```
 
 ### 4.9 Cost Control
@@ -357,14 +357,14 @@ timeouts:
 
 ```yaml
 paths:
-  teams: "swarm/teams"
-  boards: "swarm/boards"
-  results: "swarm/results"
-  projects: "swarm/projects"
-  handoffs: "swarm/handoffs"
-  status_dir: "swarm/status"
-  status_md: "swarm/status.md"
-  skill_proposals: "swarm/skill-proposals"
+  teams: "teams"
+  boards: "boards"
+  results: "results"
+  projects: "projects"
+  handoffs: "handoffs"
+  status_dir: "status"
+  status_md: "status.md"
+  skill_proposals: "skill-proposals"
 ```
 
 ---
@@ -374,12 +374,12 @@ paths:
 ### 5.1 Startup Sequence
 
 ```
-1. Read swarm/router.md (instructions)
-2. Read swarm/config.yaml (global config)
+1. Read router.md (instructions)
+2. Read config.yaml (global config)
 3. Get own team name: psmux display-message -t "$TMUX_PANE" -p '#{@team_name}'
-4. Read swarm/teams/{team}.yaml (domain definition)
-5. Read swarm/boards/{team}.yaml (existing tasks)
-6. Read related swarm/projects/{id}.yaml (if applicable)
+4. Read teams/{team}.yaml (domain definition)
+5. Read boards/{team}.yaml (existing tasks)
+6. Read related projects/{id}.yaml (if applicable)
 7. Report ready to user
 ```
 
@@ -399,7 +399,7 @@ paths:
 | Large-scale | research → plan → execute → review → improve |
 | Urgent | execute only |
 
-**Step 3 — Write to Board**: Create task entries in `swarm/boards/{team}.yaml`:
+**Step 3 — Write to Board**: Create task entries in `boards/{team}.yaml`:
 
 ```yaml
 tasks:
@@ -431,12 +431,12 @@ tasks:
 
 When woken by a Worker:
 
-1. **Scan ALL results** in `swarm/results/` (not just the reporter's — catches missed notifications)
+1. **Scan ALL results** in `results/` (not just the reporter's — catches missed notifications)
 2. **Update board**: Set completed tasks to `status: done`
 3. **Quality gate**: For `priority: high` tasks, run `/review` skill with `context: fork` (independent sub-agent)
 4. **Phase transition**: If all `depends_on` tasks are done + gate passed → create next-phase tasks with `context.previous_results` pointing to completed results
 5. **Skill proposals**: Check Worker results for `skill_candidate: found: true` → evaluate
-6. **Dashboard**: Update `swarm/status/{team}.yaml` + Sheets sync
+6. **Dashboard**: Update `status/{team}.yaml` + Sheets sync
 
 ### 5.4 Phase Transition Example
 
@@ -451,7 +451,7 @@ When woken by a Worker:
   phase: execute
   depends_on: [task_001]
   context:
-    previous_results: ["swarm/results/task_001_result.yaml"]
+    previous_results: ["results/task_001_result.yaml"]
     knowledge: |
       Target: Males 30s, IT industry
       Tone: Professional but approachable
@@ -471,13 +471,13 @@ When woken by a Worker:
 ### 6.1 Startup Sequence
 
 ```
-1. Read swarm/worker.md (instructions)
+1. Read worker.md (instructions)
 2. Get own ID: psmux display-message -t "$TMUX_PANE" -p '#{@agent_id}'
    → e.g., worker_0, worker_1, ...
 3. Get team name: psmux display-message -t "$TMUX_PANE" -p '#{@team_name}'
    → e.g., dev, design, article, ...
-4. Read swarm/teams/{team}.yaml (domain definition)
-5. Read swarm/boards/{team}.yaml (check for pending tasks)
+4. Read teams/{team}.yaml (domain definition)
+5. Read boards/{team}.yaml (check for pending tasks)
 6. Ready
 ```
 
@@ -499,19 +499,19 @@ assigned_to: null    →      assigned_to: worker_2
 
 | Field | Action |
 |-------|--------|
-| `project` | Read `swarm/projects/{project}.yaml` |
+| `project` | Read `projects/{project}.yaml` |
 | `context.files` | Read listed files |
 | `context.previous_results` | Read prior phase result files |
 | `context.knowledge` | Use domain knowledge in task |
 
-**Step 4 — Execute**: Perform the task as a domain expert (defined by `swarm/teams/{team}.yaml` → `domain.what`). May use any global skills in `~/.claude/skills/`.
+**Step 4 — Execute**: Perform the task as a domain expert (defined by `teams/{team}.yaml` → `domain.what`). May use any global skills in `~/.claude/skills/`.
 
 **Step 5 — Self-Review**: Before writing result:
 - All completion criteria met?
 - Quality sufficient?
 - No typos or obvious errors?
 
-**Step 6 — Write Result** (`swarm/results/{task_id}_result.yaml`):
+**Step 6 — Write Result** (`results/{task_id}_result.yaml`):
 
 ```yaml
 task_id: task_001
@@ -606,10 +606,10 @@ psmux send-keys -t {session}:{window}.{pane} Enter
 When waking multiple Workers for parallel tasks, insert a **2-second delay** between each:
 
 ```powershell
-psmux send-keys -t dev:workers.0 'New task on board. Check swarm/boards/dev.yaml.'
+psmux send-keys -t dev:workers.0 'New task on board. Check boards/dev.yaml.'
 psmux send-keys -t dev:workers.0 Enter
 sleep 2
-psmux send-keys -t dev:workers.1 'New task on board. Check swarm/boards/dev.yaml.'
+psmux send-keys -t dev:workers.1 'New task on board. Check boards/dev.yaml.'
 psmux send-keys -t dev:workers.1 Enter
 ```
 
@@ -620,9 +620,9 @@ Within a team:
   User → Router          : Direct conversation (user types in Router pane)
   Router → Worker        : send-keys 2-call + board YAML
   Worker → Router        : send-keys 2-call + result YAML
-  Router → Board         : Edit swarm/boards/{team}.yaml
-  Worker → Result        : Write swarm/results/{task_id}_result.yaml
-  Router → Status        : Edit swarm/status/{team}.yaml
+  Router → Board         : Edit boards/{team}.yaml
+  Worker → Result        : Write results/{task_id}_result.yaml
+  Router → Status        : Edit status/{team}.yaml
   Router → Sheets        : gog CLI command (if enabled)
 
 Between teams:
@@ -653,7 +653,7 @@ psmux capture-pane -t {session}:{window}.{pane} -p | tail -5
 
 ## 8. Project Management & Phase DAG
 
-### 8.1 Project Definition (`swarm/projects/{id}.yaml`)
+### 8.1 Project Definition (`projects/{id}.yaml`)
 
 ```yaml
 project:
@@ -734,7 +734,7 @@ Workers woken for Phase N+1
 
 When one team's output is needed by another team:
 
-**Handoff file** (`swarm/handoffs/{project}_{from}_{to}.yaml`):
+**Handoff file** (`handoffs/{project}_{from}_{to}.yaml`):
 
 ```yaml
 handoff:
@@ -745,7 +745,7 @@ handoff:
   status: pending             # pending → accepted → completed
   description: "Implement based on design team's wireframes"
   deliverables:
-    - swarm/results/task_005_result.yaml
+    - results/task_005_result.yaml
     - "G:/My Drive/Projects/product_x/wireframe.fig"
   notes: "Mobile-first implementation"
   created_at: "2026-03-29T16:00:00"
@@ -844,7 +844,7 @@ Router evaluates based on criteria in `config.yaml`:
 | Automation stabilizes quality | Yes |
 | One-time special case | No → reject |
 
-### 10.3 Proposal File (`swarm/skill-proposals/{sp_id}.yaml`)
+### 10.3 Proposal File (`skill-proposals/{sp_id}.yaml`)
 
 ```yaml
 proposal:
@@ -867,7 +867,7 @@ Worker reports skill_candidate: found: true
   ↓
 Router evaluates against criteria
   ↓
-Router creates swarm/skill-proposals/{sp_id}.yaml
+Router creates skill-proposals/{sp_id}.yaml
   ↓
 Router adds to status/{team}.yaml → skill_proposals section
   ↓
@@ -893,7 +893,7 @@ Approved → Create global skill in ~/.claude/skills/
 ### 11.2 `/review` Skill Execution
 
 For high-priority tasks:
-1. Router invokes `/review swarm/results/{task_id}_result.yaml`
+1. Router invokes `/review results/{task_id}_result.yaml`
 2. The skill runs in `context: fork` — an independent sub-agent with its own context
 3. Result: OK → proceed to next phase
 4. Result: NG → Router creates a fix task on the board with the review feedback
@@ -948,10 +948,10 @@ Router receives 50% report from Worker
 After receiving /clear, the Worker restarts with minimal context:
 
 ```
-1. Read swarm/worker.md (instructions)
+1. Read worker.md (instructions)
 2. Get @agent_id and @team_name via psmux display-message
-3. Read swarm/teams/{team}.yaml
-4. Read swarm/boards/{team}.yaml
+3. Read teams/{team}.yaml
+4. Read boards/{team}.yaml
 5. Find assigned/pending task → resume from Step 1
 6. No task → stop and wait
 ```
@@ -965,7 +965,7 @@ Config option `cost.clear_after_task: true` means Workers should `/clear` after 
 ## 13. Knowledge & Memory Bloat Mitigation
 
 This section addresses the critical concern of **unbounded growth** in two storage layers:
-1. **Project knowledge** (`swarm/projects/{id}.yaml` → `knowledge` section)
+1. **Project knowledge** (`projects/{id}.yaml` → `knowledge` section)
 2. **Memory MCP** (`memory/swarm_memory.jsonl`)
 
 Both grow over time as projects accumulate decisions, insights, and preferences. Without mitigation, they become too large for agents to efficiently process.
@@ -982,7 +982,7 @@ Tier 1: Active Knowledge (in project YAML)
   └── Size limit: ~50 entries in decisions[]
   └── Always loaded by Workers
 
-Tier 2: Archived Knowledge (swarm/projects/{id}_archive.yaml)
+Tier 2: Archived Knowledge (projects/{id}_archive.yaml)
   └── Historical decisions, superseded strategies, old notes
   └── Referenced only when explicitly needed
   └── Router moves entries here during phase transitions
@@ -1004,7 +1004,7 @@ Tier 3: Summarized Knowledge (in knowledge.summary field)
 **Archival Format**:
 
 ```yaml
-# swarm/projects/product_x_archive.yaml
+# projects/product_x_archive.yaml
 archived_knowledge:
   archived_at: "2026-03-29T15:00:00"
   entries:
@@ -1091,23 +1091,23 @@ mcp__memory__read_graph()
 
 ### 13.3 Result File Cleanup
 
-**Problem**: `swarm/results/` accumulates result files from every completed task indefinitely.
+**Problem**: `results/` accumulates result files from every completed task indefinitely.
 
 **Mitigation**:
 - After a phase completes and its results are consumed by the next phase, result files become archival
-- Router moves consumed results to `swarm/results/archive/` at phase transitions
+- Router moves consumed results to `results/archive/` at phase transitions
 - Archive can be periodically purged (user decision)
-- Active results (current phase) remain in `swarm/results/`
+- Active results (current phase) remain in `results/`
 
 ### 13.4 Board Cleanup
 
-**Problem**: `swarm/boards/{team}.yaml` grows with completed task entries.
+**Problem**: `boards/{team}.yaml` grows with completed task entries.
 
 **Mitigation**:
 - When `-Clean` flag is used on deploy, boards are backed up and reset
 - Router should periodically prune `status: done` entries older than 7 days
 - Keep only `pending`, `assigned`, `blocked`, and recently `done` tasks on the board
-- Pruned entries go to `swarm/logs/board_archive_{team}_{date}.yaml`
+- Pruned entries go to `logs/board_archive_{team}_{date}.yaml`
 
 ### 13.5 Bloat Mitigation Summary
 
@@ -1155,7 +1155,7 @@ gog sheets write {spreadsheet_id} \
   --data "{active_tasks_as_csv}"
 ```
 
-**Failure handling**: Sheets sync is non-fatal. If `gog` fails, local dashboard (`swarm/status.md`) is still updated. Error is noted in `status/{team}.yaml`.
+**Failure handling**: Sheets sync is non-fatal. If `gog` fails, local dashboard (`status.md`) is still updated. Error is noted in `status/{team}.yaml`.
 
 ### 14.2 Google Drive
 
@@ -1175,13 +1175,13 @@ paths:
 
 ## 15. Dashboard & Auto-Sync
 
-### 15.1 Local Dashboard (`swarm/status.md`)
+### 15.1 Local Dashboard (`status.md`)
 
 Auto-generated markdown file showing:
 - Active tasks (team, task, worker, phase, started_at)
 - Completed tasks today (time, team, task)
 
-### 15.2 Team Status Files (`swarm/status/{team}.yaml`)
+### 15.2 Team Status Files (`status/{team}.yaml`)
 
 Each Router maintains its team's status file:
 
@@ -1214,10 +1214,10 @@ skill_proposals:
 
 Launched by `deploy.ps1` as a PowerShell background job:
 
-1. Every **10 seconds**, check `swarm/status/*.yaml` for file changes (by LastWriteTime hash)
+1. Every **10 seconds**, check `status/*.yaml` for file changes (by LastWriteTime hash)
 2. If changes detected:
    - Parse all status YAML files (simple regex-based, not full YAML parser)
-   - Regenerate `swarm/status.md` with active/completed tables
+   - Regenerate `status.md` with active/completed tables
    - Sync to Google Sheets (if configured)
 3. This is the **only polling** in the entire system (justified: background job, minimal cost, no agent API calls)
 
@@ -1309,7 +1309,7 @@ Router must NOT guess when a request is unclear. Instead, ask the user for clari
 
 ## 18. Team Definitions
 
-Teams are defined in `swarm/teams/{name}.yaml`. Each team has a domain scope (`what` it handles, `not` what it doesn't).
+Teams are defined in `teams/{name}.yaml`. Each team has a domain scope (`what` it handles, `not` what it doesn't).
 
 ### 18.1 Pre-defined Teams
 
@@ -1339,7 +1339,7 @@ Teams are defined in `swarm/teams/{name}.yaml`. Each team has a domain scope (`w
 
 ### 18.2 Adding a New Team
 
-1. Create `swarm/teams/{name}.yaml`:
+1. Create `teams/{name}.yaml`:
 ```yaml
 name: marketing
 session: marketing
@@ -1364,7 +1364,6 @@ Router and Worker instructions are **shared across all teams**. The team YAML de
 ## 19. File Structure Reference
 
 ```
-swarm/
 ├── SPEC.md                          # This document
 ├── config.yaml                      # Global configuration
 ├── router.md                        # Router instructions (all teams)
@@ -1445,13 +1444,13 @@ This applies to: `created_at`, `completed_at`, `updated_at`, `archived_at`, and 
 ```
 DEPLOY:    ./deploy.ps1 dev article -Battle
 CONNECT:   psmux attach -t dev
-BOARDS:    swarm/boards/{team}.yaml
-RESULTS:   swarm/results/{task_id}_result.yaml
-STATUS:    swarm/status.md (auto) or swarm/status/{team}.yaml
-HANDOFF:   swarm/handoffs/{project}_{from}_{to}.yaml
-PROJECTS:  swarm/projects/{id}.yaml
-SKILLS:    swarm/skill-proposals/{sp_id}.yaml → ~/.claude/skills/
-CONFIG:    swarm/config.yaml
-TEAMS:     swarm/teams/{name}.yaml
+BOARDS:    boards/{team}.yaml
+RESULTS:   results/{task_id}_result.yaml
+STATUS:    status.md (auto) or status/{team}.yaml
+HANDOFF:   handoffs/{project}_{from}_{to}.yaml
+PROJECTS:  projects/{id}.yaml
+SKILLS:    skill-proposals/{sp_id}.yaml → ~/.claude/skills/
+CONFIG:    config.yaml
+TEAMS:     teams/{name}.yaml
 CLEANUP:   -Clean flag on deploy (backs up + resets boards)
 ```
