@@ -299,13 +299,50 @@ Write-Host "    Proposals : skill-proposals/" -ForegroundColor Gray
 Write-Host ""
 
 # ============================================================
-# Launch Commander (interactive, stays in this terminal)
+# Launch Commander in psmux session
 # ============================================================
-Write-Host "  ==========================================================" -ForegroundColor Cyan
-Write-Host "    Launching Commander..." -ForegroundColor Cyan
-Write-Host "    Talk to the Commander to give instructions to your teams." -ForegroundColor Gray
-Write-Host "    Open new tabs and run 'psmux attach -t <team>' to watch." -ForegroundColor Gray
-Write-Host "  ==========================================================" -ForegroundColor Cyan
-Write-Host ""
+$cmdSession = "commander"
+psmux kill-session -t $cmdSession 2>$null
+psmux new-session -d -s $cmdSession -n "cmd"
+psmux set-option -p -t "$($cmdSession):cmd.0" @agent_id "commander"
+psmux set-option -t $cmdSession -w pane-border-status top
+psmux set-option -t $cmdSession -w pane-border-format "#{@agent_id}"
+psmux send-keys -t "$($cmdSession):cmd.0" "cd ""$(Get-Location)""" Enter
 
-claude --model opus --dangerously-skip-permissions
+if (-not $SetupOnly) {
+    psmux send-keys -t "$($cmdSession):cmd.0" "claude --model $RouterModel --dangerously-skip-permissions"
+    psmux send-keys -t "$($cmdSession):cmd.0" Enter
+
+    # Wait for Commander ready (max 30s)
+    $cmdReady = $false
+    for ($w = 0; $w -lt 30; $w++) {
+        $capture = psmux capture-pane -t "$($cmdSession):cmd.0" -p 2>$null
+        if ($capture -and $capture.ToString().Contains("bypass permissions")) {
+            $cmdReady = $true
+            break
+        }
+        Start-Sleep -Seconds 1
+    }
+
+    if ($cmdReady) {
+        psmux send-keys -t "$($cmdSession):cmd.0" "Read commander.md. You are the Commander."
+        Start-Sleep -Milliseconds 500
+        psmux send-keys -t "$($cmdSession):cmd.0" Enter
+        Write-Host "  [commander] session created > Claude launched > Ready" -ForegroundColor Green
+    } else {
+        Write-Host "  [commander] WARNING: not ready in 30s" -ForegroundColor Yellow
+    }
+}
+
+Write-Host ""
+Write-Host "  ==========================================================" -ForegroundColor Green
+Write-Host "    All teams + Commander deployed." -ForegroundColor Green
+Write-Host "  ==========================================================" -ForegroundColor Green
+Write-Host ""
+Write-Host "  Connect:" -ForegroundColor White
+Write-Host "    psmux attach -t commander   # Commander" -ForegroundColor Gray
+foreach ($t in $Teams) {
+    $padded = $t.PadRight(12)
+    Write-Host "    psmux attach -t $padded  # Router + $WorkersPerTeam Workers" -ForegroundColor Gray
+}
+Write-Host ""

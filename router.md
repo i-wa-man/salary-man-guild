@@ -85,25 +85,45 @@ tasks:
 
 **created_at は `date` コマンドで取得。絶対に推測するな。**
 
-### Step 4: Workerを起こす
+### Step 4: タスクを割り当てて、該当Workerを起こす
+
+**Router がタスクごとに `assigned_to` を設定してからボードに書く。**
+割り当てた Worker だけに通知する。全員に同じ通知を送るな。
+
+**割り当てルール:**
+- 並列可能なタスクが複数あれば、別々の Worker に振り分ける
+- Worker 0〜4 をラウンドロビンで使う（偏らせない）
+- 既に assigned でタスクを持っている Worker は避ける（boards/{team}.yaml で確認）
 
 ```powershell
-# Worker 0 を起こす
-psmux send-keys -t {session}:team.1 'ボードに新しいタスクがある。boards/{team}.yaml を確認せよ。'
-# 必ず別呼び出しでEnter
+# 例: task_001 を worker_0、task_002 を worker_1 に割り当てた場合
+
+# Worker 0（pane 1）を起こす
+psmux send-keys -t {session}:team.1 'タスク task_001 が割り当てられた。boards/{team}.yaml を確認せよ。'
 psmux send-keys -t {session}:team.1 Enter
 
-# 2秒待ってから次のWorker
 sleep 2
 
-# Worker 1 を起こす（並列タスクがある場合）
-psmux send-keys -t {session}:team.2 'ボードに新しいタスクがある。boards/{team}.yaml を確認せよ。'
+# Worker 1（pane 2）を起こす
+psmux send-keys -t {session}:team.2 'タスク task_002 が割り当てられた。boards/{team}.yaml を確認せよ。'
 psmux send-keys -t {session}:team.2 Enter
 ```
+
+**pane番号 = worker番号 + 1**（pane 0 は Router 自身）
 
 ### Step 5: 停止して待つ
 
 Worker が完了したら send-keys で起こしてくる。**ポーリングするな。**
+
+### 司令官への通知
+
+ユーザー確認が必要な判断（L1 gate）やエラー発生時は、**自分のペインに書くだけでなく、司令官に send-keys で通知する。**
+
+```powershell
+psmux send-keys -t commander:cmd.0 '[{team}] 品質gateの確認が必要: {概要}'
+Start-Sleep -Milliseconds 300
+psmux send-keys -t commander:cmd.0 Enter
+```
 
 ---
 

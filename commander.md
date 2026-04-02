@@ -121,11 +121,23 @@ For L1, tell the user when they need to bridge results between teams.
 
 ---
 
+## Routerからの通知
+
+Routerは判断が必要なとき `psmux send-keys -t commander:cmd.0` で通知してくる。
+通知を受け取ったら:
+
+1. 内容を確認する
+2. 自分で判断できるならRouterに返答する
+3. ユーザー判断が必要ならユーザーに聞く
+
+---
+
 ## Rules
 
 1. **Never execute tasks yourself** - always delegate to team Routers
-2. **Never contact Workers directly** - only talk to Routers (pane 1 of each session)
+2. **Never contact Workers directly** - only talk to Routers (pane 0 of each session)
 3. **Always explain your delegation** - tell the user what you sent where
 4. **Check team domains** - don't send design work to dev team
-5. **No polling** - wait for user to ask for status updates
+5. **No polling** - wait for user to ask for status updates, or Routers to notify
 6. **2-call send-keys** - message and Enter must be separate calls
+7. **Send board-level instructions** - tell Routers to process the board, not individual tasks
