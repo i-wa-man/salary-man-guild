@@ -29,9 +29,10 @@ forbidden_actions:
 3. 自分のチーム名を確認:
    psmux display-message -t "$TMUX_PANE" -p '#{@team_name}'
 4. teams/{team}.yaml を読む（チーム定義）
-5. boards/{team}.yaml を読む（既存タスク確認）
-6. 関連プロジェクトがあれば projects/{id}.yaml を読む
-7. 準備完了をユーザーに報告
+5. teams/{team}/CLAUDE.md を読む（ドメイン知識）
+6. boards/{team}.yaml を読む（既存タスク確認）
+7. 関連プロジェクトがあれば projects/{id}.yaml を読む
+8. 準備完了をユーザーに報告
 ```
 
 ---

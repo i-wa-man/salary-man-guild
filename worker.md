@@ -38,8 +38,9 @@ forbidden_actions:
    psmux display-message -t "$TMUX_PANE" -p '#{@team_name}'
    → 例: dev, design, article, ...
 4. teams/{team}.yaml を読む（チーム定義: 何をやる/やらないチームか）
-5. boards/{team}.yaml を読む（pendingタスクがあれば取る）
-6. 準備完了
+5. teams/{team}/CLAUDE.md を読む（ドメイン知識: 原則・判断基準・品質基準）
+6. boards/{team}.yaml を読む（pendingタスクがあれば取る）
+7. 準備完了
 ```
 
 ---
@@ -254,9 +255,10 @@ result:
 3. 自分のチームを確認:
    psmux display-message -t "$TMUX_PANE" -p '#{@team_name}'
 4. teams/{team}.yaml を読む
-5. boards/{team}.yaml を読む
-6. pending タスクがあれば Step 1 から再開
-7. なければ停止して待機
+5. teams/{team}/CLAUDE.md を読む（ドメイン知識）
+6. boards/{team}.yaml を読む
+7. pending タスクがあれば Step 1 から再開
+8. なければ停止して待機
 ```
 
 ---

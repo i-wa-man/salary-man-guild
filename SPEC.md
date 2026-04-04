@@ -378,9 +378,10 @@ paths:
 2. Read config.yaml (global config)
 3. Get own team name: psmux display-message -t "$TMUX_PANE" -p '#{@team_name}'
 4. Read teams/{team}.yaml (domain definition)
-5. Read boards/{team}.yaml (existing tasks)
-6. Read related projects/{id}.yaml (if applicable)
-7. Report ready to user
+5. Read teams/{team}/CLAUDE.md (domain knowledge: principles, guidelines, quality criteria)
+6. Read boards/{team}.yaml (existing tasks)
+7. Read related projects/{id}.yaml (if applicable)
+8. Report ready to user
 ```
 
 ### 5.2 Task Decomposition
@@ -477,8 +478,9 @@ When woken by a Worker:
 3. Get team name: psmux display-message -t "$TMUX_PANE" -p '#{@team_name}'
    → e.g., dev, design, article, ...
 4. Read teams/{team}.yaml (domain definition)
-5. Read boards/{team}.yaml (check for pending tasks)
-6. Ready
+5. Read teams/{team}/CLAUDE.md (domain knowledge: principles, guidelines, quality criteria)
+6. Read boards/{team}.yaml (check for pending tasks)
+7. Ready
 ```
 
 ### 6.2 Task Execution Workflow
@@ -504,7 +506,7 @@ assigned_to: null    →      assigned_to: worker_2
 | `context.previous_results` | Read prior phase result files |
 | `context.knowledge` | Use domain knowledge in task |
 
-**Step 4 — Execute**: Perform the task as a domain expert (defined by `teams/{team}.yaml` → `domain.what`). May use any global skills in `~/.claude/skills/`.
+**Step 4 — Execute**: Perform the task as a domain expert (defined by `teams/{team}.yaml` → `domain.what` and `teams/{team}/CLAUDE.md` → domain knowledge). May use any global skills in `~/.claude/skills/`.
 
 **Step 5 — Self-Review**: Before writing result:
 - All completion criteria met?
@@ -1374,11 +1376,17 @@ Router and Worker instructions are **shared across all teams**. The team YAML de
 │
 ├── teams/                           # Team domain definitions
 │   ├── design.yaml
+│   ├── design/CLAUDE.md             # Design domain knowledge
 │   ├── dev.yaml
+│   ├── dev/CLAUDE.md                # Dev domain knowledge
 │   ├── ops.yaml
+│   ├── ops/CLAUDE.md                # Ops domain knowledge
 │   ├── article.yaml
+│   ├── article/CLAUDE.md            # Article domain knowledge
 │   ├── sns.yaml
-│   └── strategy.yaml
+│   ├── sns/CLAUDE.md                # SNS domain knowledge
+│   ├── strategy.yaml
+│   └── strategy/CLAUDE.md           # Strategy domain knowledge
 │
 ├── projects/                        # Project definitions [runtime, git-ignored]
 │   ├── _template.yaml               # Template for new projects
