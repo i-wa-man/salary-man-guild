@@ -436,8 +436,9 @@ When woken by a Worker:
 2. **Update board**: Set completed tasks to `status: done`
 3. **Quality gate**: For `priority: high` tasks, run `/review` skill with `context: fork` (independent sub-agent)
 4. **Phase transition**: If all `depends_on` tasks are done + gate passed → create next-phase tasks with `context.previous_results` pointing to completed results
-5. **Skill proposals**: Check Worker results for `skill_candidate: found: true` → evaluate
-6. **Dashboard**: Update `status/{team}.yaml` + Sheets sync
+5. **Domain knowledge accumulation**: Check Worker results for `knowledge_candidate: found: true` → if the insight would change future output, append to `teams/{team}/CLAUDE.md` (fully autonomous, no user approval needed)
+6. **Skill proposals**: Check Worker results for `skill_candidate: found: true` → evaluate
+7. **Dashboard**: Update `status/{team}.yaml` + Sheets sync
 
 ### 5.4 Phase Transition Example
 
@@ -530,6 +531,11 @@ result:
   deliverables:
     - path/to/output_file
   notes: "Anything the Router should know"
+
+knowledge_candidate:                  # MANDATORY every time
+  found: false
+  insight: null
+  reason: null
 
 skill_candidate:                      # MANDATORY every time
   found: false
