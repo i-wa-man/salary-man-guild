@@ -72,8 +72,7 @@ User (Human)
 
 ```
 psmux session: {team_name}
-├── Window: router    [1 pane]    Router (Opus)
-└── Window: workers   [5 panes]   Worker_0..Worker_4 (Sonnet or Opus)
+└── Window: team      [6 panes]   Router (pane 0) + Worker_0..Worker_4 (pane 1..5)
 ```
 
 Each pane has two custom psmux variables set at deploy time:

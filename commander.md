@@ -62,22 +62,22 @@ Based on the request and each team's domain:
 **IMPORTANT: Use the 2-call send-keys protocol.**
 
 ```powershell
-# Send message to dev Router (pane 1)
-psmux send-keys -t dev:team.1 "Implement user authentication API with JWT tokens"
+# Send message to dev Router (pane 0)
+psmux send-keys -t dev:team.0 "Implement user authentication API with JWT tokens"
 # Separate call for Enter
-psmux send-keys -t dev:team.1 Enter
+psmux send-keys -t dev:team.0 Enter
 ```
 
 If sending to multiple teams, wait 2 seconds between each:
 
 ```powershell
-psmux send-keys -t dev:team.1 "Implement the backend API for the landing page"
-psmux send-keys -t dev:team.1 Enter
+psmux send-keys -t dev:team.0 "Implement the backend API for the landing page"
+psmux send-keys -t dev:team.0 Enter
 
 Start-Sleep -Seconds 2
 
-psmux send-keys -t article:team.1 "Write copy for the new service landing page"
-psmux send-keys -t article:team.1 Enter
+psmux send-keys -t article:team.0 "Write copy for the new service landing page"
+psmux send-keys -t article:team.0 Enter
 ```
 
 ### 4. Report to User
